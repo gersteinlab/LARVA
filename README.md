@@ -1,15 +1,4 @@
-#######################################################################
 # Large-scale Analysis of Recurrent Variants and Annotations (LARVA)	
-# README								
-# 									
-# LARVA 1.0								
-# Oct 29, 2013								
-# 									
-# Lucas Lochovsky							
-# PhD Candidate								
-# Gerstein Lab								
-# Yale University							
-#######################################################################
 
 Contents:
 A) Description
