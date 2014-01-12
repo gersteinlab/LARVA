@@ -114,7 +114,7 @@ while (my $line = <LISTFILE>) {
 		# print "db: $db\n";
 		# print "DEBUG: query: SELECT * FROM $table_name WHERE $lookup_attr = \'$line\'\n";
 		
-		my $sth = $dbh->prepare("SELECT * FROM $base_table_name WHERE $lookup_attr = \'$line\'");
+		my $sth = $dbh->prepare("SELECT * FROM $base_table_name WHERE rand_num = $j AND $lookup_attr = \'$line\'");
 		$sth->execute or die "SQL Error: $DBI::errstr\n";
 		my @result_row = $sth->fetchrow_array;
 		
@@ -122,16 +122,16 @@ while (my $line = <LISTFILE>) {
 		# print "DEBUG: result_row: @result_row\n";
 		
 		if ($opt eq "-af") {
-			my $cur_nsamp = $result_row[1];
-			my $cur_nannot = $result_row[2];
-			my $cur_nvar = $result_row[3];
+			my $cur_nsamp = $result_row[2];
+			my $cur_nannot = $result_row[3];
+			my $cur_nvar = $result_row[4];
 			
 			push(@nsamp, $cur_nsamp);
 			push(@nannot, $cur_nannot);
 			push(@nvar, $cur_nvar);
 		} elsif ($opt eq "-an") {
-			my $cur_nsamp = $result_row[4];
-			my $cur_nvar = $result_row[5];
+			my $cur_nsamp = $result_row[5];
+			my $cur_nvar = $result_row[6];
 			
 			push(@nsamp, $cur_nsamp);
 			push(@nvar, $cur_nvar);

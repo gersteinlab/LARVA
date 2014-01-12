@@ -250,10 +250,10 @@ sub larva {
 
 		# DEBUG
 		# print "DEBUG: Loop iteration: $var_pointer\n";
-	# 	print "DEBUG: What's in watch_list?\n";
-	# 	while (my ($key, $value) = each(%watch_list)) {
-	# 		print "$key => $value\n";
-	# 	}
+# 		print "DEBUG: What's in watch_list?\n";
+# 		while (my ($key, $value) = each(%watch_list)) {
+# 			print "$key => $value\n";
+# 		}
 	
 		# Unpack current pointers
 		# Variant variables
@@ -267,6 +267,11 @@ sub larva {
 		my $key = $cur_var_chr."\t".$cur_var_start."\t".$cur_var_end;
 		my $cur_var_samps_string = $var_array_samps{$key};
 		my @cur_var_samps = split(/\t/, $cur_var_samps_string);
+		
+		# DEBUG
+# 		if ($cur_var_chr eq "chr3" && $cur_var_start == 178952084 && $cur_var_end == 178952085) {
+# 			print "cur_var_samps_string: $cur_var_samps_string\n";
+# 		}
 	
 		# Annotation variables
 		my $cur_ann_ref = $ann_array[$ann_pointer];
@@ -325,6 +330,13 @@ sub larva {
 				my $key4 = $watch_ann_chr."\t".$watch_ann_start."\t".$watch_ann_end."\t".$watch_ann_name;
 				my $watch_ann_afiles_string = $ann_array_afiles{$key4};
 				my @watch_ann_afiles = split(/\t/, $watch_ann_afiles_string);
+				
+				# DEBUG
+				# print "Watch list: $key4\n";
+				# print "watch_ann_afiles_string: $watch_ann_afiles_string\n";
+# 				foreach $ele (@watch_ann_afiles) {
+# 					print "$ele\n";
+# 				}
 			
 				# Keys to remove from %watch_list
 				my @splice_keys = ();
@@ -371,8 +383,17 @@ sub larva {
 					}
 				
 					# afile.nsamp
+					
+					# DEBUG
+# 					foreach $ele (@cur_var_samps) {
+# 						print "cur_var_samps: $ele\n";
+# 					}
+# 					foreach $file (@watch_ann_afiles) {
+# 						print "watch_ann_afiles: $file\n";
+# 					}
+					
 					foreach $samp (@cur_var_samps) {
-						foreach $afile (@watch_ann_files) {
+						foreach $afile (@watch_ann_afiles) {
 						# foreach (my ($key, $value) = each(%watch_ann_afiles)) {
 					
 							# DEBUG
@@ -645,8 +666,17 @@ sub larva {
 	# For each $afile, deduplicate its sample list and count them
 	# Iterate through %afile_sample_list keys, and update %afile_summary
 	while (my ($key, $value) = each(%afile_sample_list)) {
+		# DEBUG
+		# print "$key => $value\n";
+	
 		my @samp_array = @{$afile_sample_list{$key}};
 		@samp_array = dedup(@samp_array);
+		
+		# DEBUG
+# 		foreach $ele (@samp_array) {
+# 			print "$ele\n";
+# 		}
+		
 		${$afile_summary{$key}}[0] = scalar(@samp_array);
 	}
 

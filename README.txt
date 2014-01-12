@@ -10,6 +10,7 @@
 # Gerstein Lab																												#
 # Yale University																											#
 #######################################################################
+build 1
 
 Contents:
 A) Description
@@ -126,8 +127,8 @@ Used for the LARVA-Core runs on the random datasets.
 [ncpu]: The number of CPU cores LARVA-SAM should use to parallelize its workload.
 
 [aropt]: There are two options here:
-"e": Randomize variants over the human exome. Only supported option at this time.
-"g": Randomize variants over the whole human genome. Implementation is currently underway.
+"e": Randomize variants over the human exome.
+"g": Randomize variants over the whole human genome.
 
 [out db dir]: The directory to which the SQLite databases that hold the output
 are written.

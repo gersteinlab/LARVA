@@ -114,8 +114,19 @@ sub rand_variant_place {
 	# 	my $sth = $dbh->prepare("SELECT * FROM $coor_table WHERE name LIKE \"$target_annotation-%\"");
 	# 	$sth->execute or die "SQL Error: $DBI::errstr\n";
 
-		my $target_region_string = $regions{$target_annotation};
-		my @target_regions = split(/;/, $target_region_string);
+		# Translating name to target regions is determined by whether we're doing
+		# exome or whole genome random variant generation
+		my @target_regions;
+		if (keys(%regions) == 1) { # Whole genome version
+			$target_annotation =~ m/(\w+):(\w+)-(\w+)/;
+			my $chr = $1;
+			my $start  = $2;
+			my $end = $3;
+			push(@target_regions, "$chr\t$start\t$end");
+		} else { # Exome version
+			my $target_region_string = $regions{$target_annotation};
+			@target_regions = split(/;/, $target_region_string);
+		}
 
 		# Now add up the region lengths
 		my $total_length = 0;

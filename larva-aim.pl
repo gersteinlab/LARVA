@@ -41,7 +41,7 @@ if ($opt eq "-af") {
 	
 	$dbh->do("DROP TABLE IF EXISTS afile_aim_2");
 	$dbh->do("CREATE TABLE afile_aim_2 (afile_name varchar(50), nsamp int, nannot int, nvar int, count int)");
-	$dbh->do("SELECT t1.*, t2.count FROM afile_summary AS t1 JOIN afile_aim AS t2 ON t1.afile_name=t2.afile_name ORDER BY t1.nsamp, t1.nannot, t1.nvar");
+	$dbh->do("INSERT INTO afile_aim SELECT t1.*, t2.count FROM afile_summary AS t1 JOIN afile_aim AS t2 ON t1.afile_name=t2.afile_name ORDER BY t1.nsamp, t1.nannot, t1.nvar");
 	
 	my $sth = $dbh->prepare("SELECT * FROM afile_aim_2");
 	$sth->execute or die "SQL Error: $DBI::errstr\n";
@@ -64,7 +64,7 @@ if ($opt eq "-af") {
 	
 	$dbh->do("DROP TABLE IF EXISTS ann_aim");
 	$dbh->do("CREATE TABLE ann_aim (chr varchar(12), start int, end int, ann_name varchar(50), nsamp int, nvar int, count int)");
-	$dbh->do("SELECT chr, start, end, ann_name, nsamp, nvar, count(1) FROM annotation_summary GROUP BY chr, start, end, ann_name, nsamp, nvar ORDER BY ann_nsamp, ann_nvar");
+	$dbh->do("INSERT INTO ann_aim SELECT chr, start, end, ann_name, nsamp, nvar, count(1) FROM annotation_summary GROUP BY chr, start, end, ann_name, nsamp, nvar ORDER BY nsamp, nvar");
 	
 	my $sth = $dbh->prepare("SELECT * FROM ann_aim");
 	$sth->execute or die "SQL Error: $DBI::errstr\n";

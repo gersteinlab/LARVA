@@ -107,7 +107,11 @@ if ($aropt eq "e") {
 	$annotation_file = "exome-prob-dist.txt";
 	$regions_file = "gencode.v15.coding.cds.nodup.mutsig_int.bed";
 } elsif ($aropt eq "g") {
-	# Not yet developed
+	$annotation_file = "wg-prob-dist.txt";
+	$regions_file = "None";
+} else { # Invalid option
+	print "Invalid option: $aropt. Use either \'e\' or \'g\'.\n";
+	exit(1);
 }
 
 # Import the $annotation_file and $regions_file data into memory
@@ -131,20 +135,24 @@ close(AFILE);
 # Bring in the regions
 # Format: (chr, start, end, name)
 my %regions;
-open RFILE, "<$regions_file" or die "Can't open $regions_file: $!\n";
-while (my $line = <RFILE>) {
-	chomp($line);
+if ($aropt eq "e") {
+	open RFILE, "<$regions_file" or die "Can't open $regions_file: $!\n";
+	while (my $line = <RFILE>) {
+		chomp($line);
 	
-	my ($chr, $start, $end, $name) = split(/\t/, $line);
-	my $basename = $name;
-	$basename =~ s/\-\d+$//;
-	if (exists $regions{$basename}) { # Add region to the end
-		$regions{$basename} .= ";".$chr."\t".$start."\t".$end;
-	} else { # Initialize this basename
-		$regions{$basename} = $chr."\t".$start."\t".$end;
+		my ($chr, $start, $end, $name) = split(/\t/, $line);
+		my $basename = $name;
+		$basename =~ s/\-\d+$//;
+		if (exists $regions{$basename}) { # Add region to the end
+			$regions{$basename} .= ";".$chr."\t".$start."\t".$end;
+		} else { # Initialize this basename
+			$regions{$basename} = $chr."\t".$start."\t".$end;
+		}
 	}
+	close(RFILE);
+} else { # Whole genome version. Just a stub, because the regions can be derived from the $annotation_file.
+	$regions{"W"} = "G";
 }
-close(RFILE);
 
 # Need the afile processing code from LARVA-Core here. This is so that this
 # step is only done once.
@@ -258,6 +266,8 @@ my $pm = new Parallel::ForkManager($ncpu);
 # Set up the temporary files
 my $afile_summary_file = "afile_summary_file.txt";
 my $annotation_summary_file = "annotation_summary_file.txt";
+# my $afile_summary_file = "/nfs/storage15/ll426-data/rand-home/afile_summary_file.txt";
+# my $annotation_summary_file = "/nfs/storage15/ll426-data/rand-home/annotation_summary_file.txt";
 
 # Scrub if necessary
 if (-e $afile_summary_file) {
@@ -372,6 +382,7 @@ $dbh->do("CREATE TABLE $annotation_summary_table (rand_num int, chr varchar(12),
 
 # Prepare queries in $sqlfile
 my $sqlfile = "temp.sql";
+# my $sqlfile = "/nfs/storage15/ll426-data/rand-home/temp.sql";
 open SQLFILE, ">$sqlfile" or die "Can't open $sqlfile: $!\n";	
 print SQLFILE ".import $afile_summary_file $afile_summary_table\n";
 print SQLFILE ".import $annotation_summary_file $annotation_summary_table\n";
