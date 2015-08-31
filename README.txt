@@ -1,212 +1,123 @@
-#######################################################################
-# Large-scale Analysis of Recurrent Variants and Annotations (LARVA)	#
-# README																															#
-# 																																		#
-# LARVA 1.0																														#
-# Oct 29, 2013																												#
-# 																																		#
-# Lucas Lochovsky																											#
-# PhD Candidate																												#
-# Gerstein Lab																												#
-# Yale University																											#
-#######################################################################
-build 1
+##############################################################################
+Large-scale Analysis of Recurrent Variants in Annotations (LARVA)
+CODE README FILE
+
+LARVA version 2.0
+July 15, 2015
+
+Lucas Lochovsky	and Jing Zhang
+Gerstein Lab
+Yale University
+##############################################################################
 
 Contents:
-A) Description
-B) Prerequisites
-C) Usage of LARVA-Core (larva-core.pl)
-D) Usage of LARVA-SAM (larva-sam/larva-sam.pl)
-E) Usage of LARVA-AIM (larva-aim.pl)
+A) Prerequisite Software
+B) File List
+C) Build Instructions
+D) Prerequisite User-supplied Data
+E) LARVA Data Context
+F) Usage of "larva" (master program)
 
-(A) Description
+(A) Prerequisite Software
 
-LARVA is a computational framework for the identification of recurrent variants
-and recurrently mutated annotations in a cohort of whole genome sequenced (WGS'ed)
-disease patient samples. Recurrent variants refer to single nucleotide variants
-(SNVs) that are present in multiple samples. Recurrently mutated annotations refer
-to annotations that contain variants that span multiple samples. LARVA allows any
-set of variant calls to be used with any genome annotation set, enabling recurrent
-variation analysis of a wide range of genomic elements.
+LARVA is developed on Unix-based operating systems like Linux and Mac OS X. These types of operating systems are fully supported. It is possible that LARVA may function under Windows in an environment like Cygwin, but this has not been tested.
 
-LARVA-Core performs the recurrent variant analysis, and stores its output in a
-SQLite database. LARVA-SAM assesses the statistical significance of the results
-of LARVA-Core by simulating the creation of variant call sets where the variant
-positions are randomized. The recurrent variants and annotations of the random
-call sets are compared to that of the actual call sets to ascertain statistical
-significance. Finally, LARVA-AIM facilitates the study of pathway and network
-recurrent variation by manipulating LARVA-Core's output to link gene and
-pathway/network data in a single view.
+The following software are required to run LARVA. The "version tested" fields indicate the versions of each dependency that have been tested with LARVA. Earlier versions may work, but are unsupported.
 
-(B) Prerequisites
-
-The following software are required for the operation of all LARVA modules.
-
-1) Perl
-	Link: http://www.perl.org
-
-2) DBI (Perl module): Database-independent interface for Perl.
-	Link: http://search.cpan.org/~timb/DBI-1.630/DBI.pm
+1) gcc: The GNU project's C and C++ compiler. Necessary to produce executables from the C++ source code in the LARVA distribution.
+	Link: http://gcc.gnu.org/
+	Version tested: 4.4.6
 	
-3) DBD::SQLite (Perl module): SQLite specific interface for Perl. Includes a
-complete installation of SQLite, which is also a prerequisite of LARVA.
-	Link: http://search.cpan.org/~ishigaki/DBD-SQLite-1.40/lib/DBD/SQLite.pm
-
-The following additional software are required for the operation of LARVA-SAM.
-
-1) Parallel::ForkManager (Perl module): Required to automatically distribute
-parallelizable work across all available CPU cores.
-	Link: http://search.cpan.org/~szabgab/Parallel-ForkManager-1.05/lib/Parallel/ForkManager.pm
+2) make: The GNU make utility, used to automate compilation of C++ source code in LARVA.
+	Link: https://www.gnu.org/software/make/
+	Version tested: 3.81
 	
-2) R: Required for determining the statistical significance of recurrent variants.
-"Rscript" must be in the environment $PATH variable. For more info on the $PATH
-variable, refer to: http://www.cyberciti.biz/faq/unix-linux-adding-path/
-	Link: http://www.r-project.org/
+3) bigWigAverageOverBed: Required to compute the DNA replication timing signal of each genome region under study for recurrent mutation. Must be in the same directory as LARVA or it will fail.
+	*** THE 64-BIT LINUX VERSION OF THIS SCRIPT IS INCLUDED WITH LARVA. FOR OTHER VERSIONS USE THE FOLLOWING LINK.
+	Link: http://genome.ucsc.edu/goldenpath/help/bigWig.html (scroll to end of page)
+	Version tested: 2.0
 	
-(C) Usage of LARVA-Core
+4) BEDTools: Required for computing intersections between annotations and blacklist regions.
+	Link: https://github.com/arq5x/bedtools2
+	Version tested: 2.13.3
+	
+(B) File list
 
-LARVA-Core performs a recurrent variant analysis with a set of variant call files,
-or vfiles, and a set of genome annotation files, or afiles. The analysis is invoked
-with the "larva-core.pl" script.
+1) annotations: The folder for the prerequisite data context.
 
-Usage: perl larva-core.pl [vfiles list] [afiles list] [sqlite db]
+2) bigWigAverageOverBed: A utility script (for 64-bit Linux only) from the UCSC Genome Browser that calculates a genome signal's (in bigWig format) average over a series of intervals (in BED format). Used by LARVA to compute the DNA replication timing of each annotation in the input annotation file.
 
-[vfiles list]: This is the path to a file with the list of vfiles to intersect
-with the afiles for recurrent variant analysis. This list file contains, one per
-line, the path to each vfile. Each vfile corresponds to the variants of a single
-sample, and are formatted as 3-column BED files.
+3) dependency-check.sh: Checks that all of LARVA's prerequisite software is installed at compile time.
 
-[afiles list]: This is the path to a file with the list of afiles to intersect
-with the vfiles for recurrent variant analysis. This list file contains, one per
-line, the path to each afile. Each afile is formatted with 4 columns:
-(chr, start, stop, name).
+4) larva.cpp: The master C++ source code that computes variant intersections with annotations, and calls the other .cpp files for the significance computation.
 
-[sqlite db]: The path to the SQLite database file that LARVA-Core should use for
-its output. Will be created if it doesn't already exist.
+5) makefile: The script that compiles the C++ source code.
 
-After "larva-core.pl" has finished, one may use the "larva-query.pl" script to
-retrieve results from the output database. "larva-query.pl" walks the user
-through the steps to retrieving data on variants, annotations, samples, or afiles.
-Alternatively, one may use SQLite to directly query the database with SQL syntax.
-The output database consists of three tables that summarize LARVA-Core's findings:
+6) moment.estimator.cpp: The C++ source code for doing model fitting.
 
-a) afile_summary: This table contains recurrent mutation data that pertains to
-the sets of annotations contained in each afile. Its schema is:
-(afile name, afile number of samples mutated (nsamp), afile number of annotations
-recurrently mutated (nannot), afile number of recurrent variants (nvar))
+7) moment.estimator.h: The header file to allow use of functions from "moment.estimator.cpp" in "larva.cpp"
 
-b) annotation_summary: This table contains recurrent mutation data that pertains
-to individual annotations. Its schema is:
-(afile name, annotation chr, annotation start, annotation end, annotation name,
-annotation number of samples mutated (nsamp), annotation number of recurrent
-variants (nvar))
+8) p.value.calc.cpp: The C++ source code for doing p-value calculations.
 
-c) variant_annotation_mappings: This table contains pairs of intersecting variants
-and annotations. Its schema is:
-(sample, variant chr, variant start, variant end, afile name, annotation chr,
-annotation start, annotation end, annotation name)
+9) p.value.calc.h: The header file to allow use of functions from "p.value.calc.cpp" in "larva.cpp"
 
-(D) Usage of LARVA-SAM (larva-sam/larva-sam.pl)
+10) README.txt: This file. The file to explain all other files.
 
-LARVA-SAM produces replicates of the original variant call set, in terms of number
-of samples and number of variants, but randomizes the positions of the variants.
-It also runs LARVA-Core on the random datasets to determine the patterns of
-recurrent variation that would be observed with random variant positions. This
-process is invoked with the "larva-sam.pl" script (in the larva-sam directory).
+11) version.h: The header file that contains the current version number of LARVA. Ensures consistent version number reporting across all LARVA files.
+	
+(C) Build Instructions
 
-Usage: perl larva-sam.pl [vfiles list] [afiles list] [nrand] [ncpu] [aropt] [out db dir]
+Before LARVA can be used, its C++ source code must be compiled into executable binaries. All the requisite commands have been collected in the "makefile" file in the LARVA "code" directory. To initiate C++ compilation, "cd" into LARVA's code directory and run the "make" command.
 
-[vfiles list]: Identical to the parameter of the same name in "larva-core.pl".
-Used to determine how many samples and variants to use in the random datasets.
+Command summary:
 
-[afiles list]: Identical to the parameter of the same name in "larva-core.pl".
-Used for the LARVA-Core runs on the random datasets.
+	cd [larva code directory]
+	make
+	
+(D) Prerequisite User-supplied Data
 
-[nrand]: The number of random datasets to generate.
+LARVA's expects variants in an input file that contains the variants pooled from all the samples under study in interval format. Specifically, this tab-delimited format is:
 
-[ncpu]: The number of CPU cores LARVA-SAM should use to parallelize its workload.
+(chr, start, stop, cancer type, sample name)
 
-[aropt]: There are two options here:
-"e": Randomize variants over the human exome.
-"g": Randomize variants over the whole human genome.
+Additional columns after these first five are allowed. For variant files in VCF format, we recommend the use of the vcf2bed.py script for conversion, available at: https://code.google.com/p/bedops/downloads/detail?name=vcf2bed.py
 
-[out db dir]: The directory to which the SQLite databases that hold the output
-are written.
+(E) LARVA Data Context
 
-After "larva-sam.pl" has finished, one may use "larva-sam-query.pl" to determine
-the statistical significance of the observed recurrent variation in afiles or
-annotations.
+The data context files must be downloaded from larva.gersteinlab.org and placed in the "code/annotations" folder to run LARVA.
 
-Usage: perl larva-sam-query.pl [opt] [list file] [larva db dir] [nrand]
-[observed data db] [output file]
+To compute the DNA replication timings of each genome region for the purpose of regional mutation rate correction, a replication timing signal track in bigWig format is provided. This data was sourced from Chen et al. (PMID: 20103589), and processed into bigWig format using the utilities available for download at the following URL.
+	Expected path to replication timing file: code/annotations/replication_timing.bw
+	bigWig URL: http://genome.ucsc.edu/goldenpath/help/bigWig.html
+	
+Blacklist regions refer to genome intervals for which read mappability is extremely difficult. Many genome analyses exclude these regions from analysis due to the unreliability of results. Blacklist regions were obtained from the UCSC Genome Browser at the following URL.
+	Expected path to blacklist regions file: code/annotations/blacklist_regions.bed
+	Blacklist regions URL: http://genome.ucsc.edu/ --> Tables
+		Group: Mapping and Sequencing
+		Track: Mappability
+		Table: DAC Blacklist (wgEncodeDacMapabilityConsensusExcludable)
+	
+Gene and pseudogene annotations were derived from the main GENCODE v15 annotation file.
+	Expected path to gene annotations file: code/annotations/genes.bed
+	Expected path to pseudogene annotations file: code/annotations/pgenes.bed
+	GENCODE URL: http://www.gencodegenes.org/releases/15.html
+	
+(F) Usage of "larva" (master program)
 
-[opt]: There are two options here:
-"-af": Compute statistical significance for a list of afiles
-"-an": Compute statistical significance for a list of annotations
+Usage: larva -vf|--variant-file [variant file] -af|--annotation-file [annotation file] -o|--output-file [output file] [-b]
 
-[list file]: The list of afiles or annotations one wants statistical significance
-computations for. Each afile/annotation appears one per line in this file.
+Synopsis: larva takes the variants in the [variant file] and intersects them with the annotations in the [annotation file], counting up the number of intersecting variants for each annotation. Additionally, the average replication timing is calculated for each annotation using the user provided replication timing file in the "code/annotations" folder. This program also uses gene and pseudogene annotations provided by the user to flag annotations that intersect genes and/or pseudogenes. This flag uses the following values:
 
-[larva db dir]: The directory of output databases produced by "larva-sam.pl"
+0 --> no gene or pseudogene intersection
+1 --> gene intersection
+2 --> pseudogene intersection
+3 --> both gene and pseudogene intersection
 
-[nrand]: The number of random datasets that were generated.
+Optionally, one may run the program with the [-b] option, indicating that the program should exclude any annotations from the [annotation file] that intersect the blacklist regions file in the "code/annotations" folder.
 
-[observed data db]: The output database produced by "larva-core.pl" with the
-actual data. Used for comparison with random data.
+The results are produced in the [output file] with the following tab-delimited format:
 
-[output file]: Contains the output of "larva-sam-query.pl". This file contains
-data on the Normal distributions fitted to each measure of mutation. Measures of
-mutation here refer to:
+(chr, start, stop, name, mutation count, gene flag, blacklist flag, length,
+DNA replication timing, BBD model p-value, binomial model p-value, BBD model with repl timing correction p-value, binomial model with repl timing correction p-value, BBD model with BH adjustment p-value, BBD model with repl timing correction and BH adjustment p-value, binomial model with BH adjustment p-value, binomial model with repl timing correction and BH adjustment p-value)
 
-"-af" option:
-a) Afile's number of samples mutated (nsamp)
-b) Afile's number of annotations recurrently mutated (nannot)
-c) Afile's number of recurrent variants (nvar)
-
-"-an" option:
-a) Annotation's number of samples mutated (nsamp)
-b) Annotation's number of recurrent variants (nvar)
-
-For each afile/annotation in the [list file], and each appropriate measure of
-mutation, the mean, standard deviation, the 95% confidence interval bounds
-(i.e. (mean-(2*SD)) and (mean+(2*SD))) of the fitted Normal distribution is
-reported. The fifth value is the p-value derived from comparing the actual, observed
-data to the Normal distribution. Using this number, one can determine if an
-annotation, or afile's set of annotations, are recurrently mutated significantly
-more than expected.
-
-Sample output:
-(Ignore the rows that say "mean" and "sd". This is added by R and is not correct.)
-
-Original query was for two annotations, CASR-7 and ADCY6-12.
-
-<-- CASR-7 NSAMP -->
-mean   sd mean mean      
-   42.749    6.521855    29.7052890    55.7927110    0.4846501 
-<-- CASR-7 NVAR -->
-mean   sd mean mean      
-   6.0573    2.442707    1.1718863    10.9427137    0.2132177 
-<-- ADCY6-12 NSAMP -->
-mean   sd mean mean      
-   43.0698    6.50347    30.06285909    56.07674091    0.04436481 
-<-- ADCY6-12 NVAR -->
-mean   sd mean mean      
-   4.541301    2.115584    0.3101326    8.7724674    0.3990282
-
-(E) Usage of LARVA-AIM (larva-aim.pl)
-
-LARVA-AIM is an analysis integration module that uses the LARVA-Core output of
-a pathway or network analysis (where individual pathways and network pairs are
-represented with afiles) to place recurrently mutated genes in their pathway or
-network context.
-
-Usage: perl larva-aim.pl [database] [outfile]
-
-[database]: The SQLite database produced as output from a LARVA-Core run using
-pathways or networks
-
-[outfile]: The file with the output of "larva-aim.pl". The output file will
-contain a tab-delimited list with the following schema:
-(annotation chr, annotation start, annotation end, annotation name, annotation
-number of samples mutated, annotation number of recurrent variants, number of afiles
-this annotation appears in)
+The blacklist flag is 1 if the annotation intersects a blacklist region, and 0 otherwise.
