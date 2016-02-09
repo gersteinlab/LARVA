@@ -342,7 +342,7 @@ int main (int argc, char* argv[]) {
 				piece = linebuf;
 				linebuf.clear();
 			}
-			row.push_back(piece);
+			// row.push_back(piece);
 			numcol++;
 			
 			// Format verifications
@@ -367,6 +367,11 @@ int main (int argc, char* argv[]) {
 					return 1;
 				}
 			}
+			
+			if ((numcol >= 1 && numcol <= 4) || pos == (unsigned int) string::npos) {
+				row.push_back(piece);
+			}
+			
 			pos = linebuf.find_first_of("\t");
 		}
 		
@@ -409,7 +414,7 @@ int main (int argc, char* argv[]) {
 			}
 			numcol++;
 			
-			if (numcol == 5) { // This is the value that indicates gene intersection
+			if (pos == (unsigned int) string::npos) { // This is the value that indicates gene intersection
 				// Convert string to integer
 				int gene_flag = atoi(piece.c_str());
 				if (gene_flag) { // Yes gene
@@ -461,7 +466,7 @@ int main (int argc, char* argv[]) {
 			}
 			numcol++;
 			
-			if (numcol == 5) { // This is the value that indicates pgene intersection
+			if (pos == (unsigned int) string::npos) { // This is the value that indicates pgene intersection
 				string gene_flag_str = annotation_mutation_counts[line_num-1][5];
 				int gene_flag = atoi(gene_flag_str.c_str());
 				

@@ -82,6 +82,12 @@ LARVA's expects variants in an input file that contains the variants pooled from
 
 Additional columns after these first five are allowed. For variant files in VCF format, we recommend the use of the vcf2bed.py script for conversion, available at: https://code.google.com/p/bedops/downloads/detail?name=vcf2bed.py
 
+For the annotation file, LARVA expects at least four columns:
+
+(chr, start, stop, name)
+
+Additional columns after these first four are allowed.
+
 (E) LARVA Data Context
 
 The data context files must be downloaded from larva.gersteinlab.org and placed in the "code/annotations" folder to run LARVA.
