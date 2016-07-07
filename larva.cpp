@@ -9,6 +9,7 @@
 #include <map>
 #include <algorithm>
 #include <time.h>
+#include <stdexcept>
 #include "version.h"
 #include "p.value.calc.h"
 
@@ -518,10 +519,43 @@ int main (int argc, char* argv[]) {
 	string command = "./bigWigAverageOverBed " + repfile + " " + avg_infile + " " + avg_outfile;
 	system(command.c_str());
 	
+	// Next command depends on OS
+	command = "uname";
+	char buf[STRSIZE];
+	string os = "";
+	FILE* pipe = popen(command.c_str(), "r");
+  if (!pipe) throw runtime_error("Could not determine operating system. Exiting.\n");
+  try {
+		while (!feof(pipe)) {
+			if (fgets(buf, 128, pipe) != NULL) {
+				os += buf;
+			}
+		}
+	} catch (...) {
+		pclose(pipe);
+    throw;
+	}
+	pclose(pipe);
+	
+	// DEBUG
+	// printf("%s\n", os.c_str());
+	
+	if (os == "Darwin\n") { // OS = Mac OS X
+		command = "sed -i .bak 's/^reg//g' temp5.txt";
+	} else { // Assume Linux, or rather, that this command is compatible
+		command = "sed -i 's/^reg//g' temp5.txt";
+	}
+	system(command.c_str());
+	
+	string avg_outfile_sorted = "temp6.txt";
+	
+	command = "sort -n -k 1,1 " + avg_outfile + " > " + avg_outfile_sorted;
+	system(command.c_str());
+	
 	vector<double> reptimings;
 	
 	// Read the output into memory to combine with the other results
-	FILE *avg_outfile_ptr = fopen(avg_outfile.c_str(), "r");
+	FILE *avg_outfile_ptr = fopen(avg_outfile_sorted.c_str(), "r");
 	while (fgets(linebuf_cstr, STRSIZE-1, avg_outfile_ptr) != NULL) {
 		
 		string linebuf = string(linebuf_cstr);
@@ -704,16 +738,18 @@ int main (int argc, char* argv[]) {
 	fclose(outfile_ptr);
 	
 	// Wrap up by removing the temporary files created along the way
-	string rmcom = "rm " + mut_count;
-	system(rmcom.c_str());
-	rmcom = "rm " + gene_count;
-	system(rmcom.c_str());
-	rmcom = "rm " + pgene_count;
-	system(rmcom.c_str());
-	rmcom = "rm " + avg_infile;
-	system(rmcom.c_str());
-	rmcom = "rm " + avg_outfile;
-	system(rmcom.c_str());
+// 	string rmcom = "rm " + mut_count;
+// 	system(rmcom.c_str());
+// 	rmcom = "rm " + gene_count;
+// 	system(rmcom.c_str());
+// 	rmcom = "rm " + pgene_count;
+// 	system(rmcom.c_str());
+// 	rmcom = "rm " + avg_infile;
+// 	system(rmcom.c_str());
+// 	rmcom = "rm " + avg_outfile;
+// 	system(rmcom.c_str());
+// 	rmcom = "rm " + avg_outfile_sorted;
+// 	system(rmcom.c_str());
 	
 	// Reporting running time
 	time_t t2;
