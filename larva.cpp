@@ -258,7 +258,7 @@ int main (int argc, char* argv[]) {
 	// Extract path, if there is one
 	// If there is path info in the string, there will be at least one forward slash
 	unsigned int lastslash = outfile.find_last_of("/");
-	if (lastslash != string::npos) { // Yes path
+	if (lastslash < outfile.size()) { // Yes path
 		string outpath = outfile.substr(0,lastslash+1);
 	
 		struct stat obuf;
@@ -509,7 +509,7 @@ int main (int argc, char* argv[]) {
 		char regnum_cstr[STRSIZE];
 		sprintf(regnum_cstr, "%d", regnum);
 		string outstring = annotation_mutation_counts[i][0] + "\t" + annotation_mutation_counts[i][1] + "\t" + annotation_mutation_counts[i][2] + "\t" + "reg" + string(regnum_cstr) + "\n";
-		fprintf(avg_infile_ptr, outstring.c_str());
+		fprintf(avg_infile_ptr, "%s", outstring.c_str());
 		regnum++;
 	}
 	fclose(avg_infile_ptr);
@@ -681,7 +681,7 @@ int main (int argc, char* argv[]) {
 	
 	// Print the header row first
 	string header = "chr\tstart\tstop\tname\tct\tflag\trep\tlen\tp.bbd\tp.binomial\tp.bbd.cor\tp.binomial.cor\tp.bbd.adj\tp.bbd.cor.adj\tp.binomial.adj\tp.binomial.cor.adj\n";
-	fprintf(outfile_ptr, header.c_str());
+	fprintf(outfile_ptr, "%s", header.c_str());
 	
 	for (unsigned int i = 0; i < annotation_mutation_counts.size(); i++) {
 	
@@ -733,23 +733,23 @@ int main (int argc, char* argv[]) {
 											 string(this_d_p_bbd_cor_adj) + "\t" +
 											 string(this_d_p_binomial_adj) + "\t" +
 											 string(this_d_p_binomial_cor_adj) + "\n";
-		fprintf(outfile_ptr, outstring.c_str());
+		fprintf(outfile_ptr, "%s", outstring.c_str());
 	}
 	fclose(outfile_ptr);
 	
 	// Wrap up by removing the temporary files created along the way
-// 	string rmcom = "rm " + mut_count;
-// 	system(rmcom.c_str());
-// 	rmcom = "rm " + gene_count;
-// 	system(rmcom.c_str());
-// 	rmcom = "rm " + pgene_count;
-// 	system(rmcom.c_str());
-// 	rmcom = "rm " + avg_infile;
-// 	system(rmcom.c_str());
-// 	rmcom = "rm " + avg_outfile;
-// 	system(rmcom.c_str());
-// 	rmcom = "rm " + avg_outfile_sorted;
-// 	system(rmcom.c_str());
+	string rmcom = "rm " + mut_count;
+	system(rmcom.c_str());
+	rmcom = "rm " + gene_count;
+	system(rmcom.c_str());
+	rmcom = "rm " + pgene_count;
+	system(rmcom.c_str());
+	rmcom = "rm " + avg_infile;
+	system(rmcom.c_str());
+	rmcom = "rm " + avg_outfile;
+	system(rmcom.c_str());
+	rmcom = "rm " + avg_outfile_sorted;
+	system(rmcom.c_str());
 	
 	// Reporting running time
 	time_t t2;
