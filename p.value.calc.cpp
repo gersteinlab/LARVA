@@ -411,7 +411,7 @@ double qnorm(double p, double mu, double sigma, bool lower_tail, bool log_p) {
 // pbinom implementation, upper tail only
 double pbinom (int x, int n, double p) {
 	double result = 0;
-	for (int i = x+1; i <= n; i++) {
+	for (int i = x; i <= n; i++) {
 		result += dbinom((double)i, (double)n, p, false);
 	}
 	return result;
@@ -600,7 +600,7 @@ double pBB (double q, double mu, double sigma, double bd, bool lower_tail, bool 
 	double FFF = 0.0;
 	double pdfall_sum = 0;
 	double allval_max = floor(q);
-	for (int i = 0; i <= (int)allval_max; i++) {
+	for (int i = 0; i < (int)allval_max; i++) {
 		double pdfall = dBB((double)i, mu, sigma, bd, false);
 		pdfall_sum += pdfall;
 	}
@@ -661,10 +661,10 @@ vector<vector<double> > p_value_equal_len (vector<int> x, vector<int> len) {
 	vector<double> p_bb;
 	for (unsigned int i = 0; i < x.size(); i++) {
 		int this_x = x[i];
-		if (this_x == 0) {
-			this_x = 1;
-		}
-		this_x--;
+// 		if (this_x == 0) {
+// 			this_x = 1;
+// 		}
+// 		this_x--;
 		double this_p_bb;
 		if (re[0] == 0) {
 			this_p_bb = 1;
@@ -753,10 +753,10 @@ vector<vector<double> > pval_fixed_length_rep_time_correction (vector<int> x, ve
 	vector<double> p_bbd_correction;
 	for (unsigned int i = 0; i < x.size(); i++) {
 		int this_x = x[i];
-		if (this_x == 0) {
-			this_x = 1;
-		}
-		this_x--;
+// 		if (this_x == 0) {
+// 			this_x = 1;
+// 		}
+// 		this_x--;
 		double this_p_bb;
 		if (miu_val[rep_index[i]] == 0) {
 			this_p_bb = 1;
@@ -811,10 +811,10 @@ vector<vector<double> > pval_varying_length (vector<int> x, vector<int> len) {
 	vector<double> p_bbd;
 	for (unsigned int i = 0; i < x.size(); i++) {
 		int this_x = x[i];
-		if (this_x == 0) {
-			this_x = 1;
-		}
-		this_x--;
+// 		if (this_x == 0) {
+// 			this_x = 1;
+// 		}
+// 		this_x--;
 		double this_p_bb;
 		if (re[0] == 0) {
 			this_p_bb = 1;
@@ -910,10 +910,10 @@ vector<vector<double> > pval_varying_length_rep_time_correction (vector<int> x, 
 	for (unsigned int i = 0; i < x.size(); i++) {
 		
 		int this_x = x[i];
-		if (this_x == 0) {
-			this_x = 1;
-		}
-		this_x--;
+// 		if (this_x == 0) {
+// 			this_x = 1;
+// 		}
+// 		this_x--;
 		double this_p_bb;
 		if (miu_val[rep_index[i]] == 0) {
 			this_p_bb = 1;
